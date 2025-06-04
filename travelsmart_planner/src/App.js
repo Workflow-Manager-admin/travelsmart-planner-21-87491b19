@@ -1,5 +1,8 @@
+// Leaflet and react-leaflet imports are required at the top for ESLint compliance (import/first)
 import React, { useState } from 'react';
 import './App.css';
+import { MapContainer, TileLayer, Marker, Polyline, Popup, useMap } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
 
 // PUBLIC_INTERFACE
 function Navbar({ currentPage, onNavigate }) {
