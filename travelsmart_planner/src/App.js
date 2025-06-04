@@ -283,16 +283,25 @@ function MapPage() {
 function WeatherPage() {
   /**
    * Weather page: shows mockup weather cards for destinations.
+   * Real implementation would use process.env.REACT_APP_WEATHER_KEY for API access.
    */
+  // Secure Weather API key via process.env
+  const weatherApiKey = process.env.REACT_APP_WEATHER_KEY;
+
+  // STUB: In real use, would fetch with weatherApiKey, e.g.:
+  // fetch(`https://api.weatherapi.com/v1/forecast?city=London&apikey=${weatherApiKey}`)
   const mockWeather = [
     { city: 'London', temp: 19, desc: 'Cloudy', icon: '🌥️' },
     { city: 'Athens', temp: 31, desc: 'Sunny', icon: '☀️' },
     { city: 'Reykjavik', temp: 9, desc: 'Rainy', icon: '🌧️' }
   ];
+
   return (
     <div style={{paddingTop:120}}>
       <h2 style={{color:'#b3eca7'}}>Weather by Destination</h2>
       <div className="description" style={{marginBottom:16}}>See what to pack with up-to-date weather!</div>
+      {/* Example stub showing usage of env key (for developers): */}
+      {/* <pre>API Weather Key: {weatherApiKey ? '[available]' : '[missing]'}</pre> */}
       <div style={{display:'flex', gap:22, flexWrap:'wrap', marginTop:18}}>
         {mockWeather.map((w) => (
           <div key={w.city} style={{
@@ -319,9 +328,13 @@ function WeatherPage() {
 
 /**
  * Simple AI suggestion function. Produces dynamic but local results for demo.
- * In reality, would call a backend or API like Cohere/OpenAI.
+ * In reality, would call a backend or API like Cohere/OpenAI using
+ *   process.env.REACT_APP_COHERE_KEY for authentication.
  */
 function simpleAIAutoReply(userMsg) {
+  // Placeholder to show how you'd use the Cohere API key:
+  // const cohereApiKey = process.env.REACT_APP_COHERE_KEY;
+  // fetch('https://api.cohere.ai/v1/generate', { headers: { 'Authorization': `Bearer ${cohereApiKey}` } });
   const lower = userMsg.toLowerCase();
   if (lower.includes("food")) return "AI: For local food, try the top-rated restaurants on your first night!";
   if (lower.includes("museum")) return "AI: The city museum opens from 10am; don't miss the special art tour.";
