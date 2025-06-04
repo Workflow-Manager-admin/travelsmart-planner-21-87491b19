@@ -453,7 +453,15 @@ function MapPage() {
  * Allows input of any city; fetches and displays weather in real time after user request.
  */
 function WeatherPage() {
-  const weatherApiKey = process.env.REACT_APP_WEATHER_KEY;
+  // Robust API key diagnostics: display exactly what the app sees,
+  // and sanitize leading/trailing whitespace.
+  let rawWeatherApiKey = process.env.REACT_APP_WEATHER_KEY;
+  let weatherApiKey = (
+    typeof rawWeatherApiKey === "string"
+      ? rawWeatherApiKey.trim()
+      : ""
+  );
+
   const [searchCity, setSearchCity] = useState('');
   const [pending, setPending] = useState(''); // city being searched
   const [weather, setWeather] = useState(null);
@@ -481,8 +489,17 @@ function WeatherPage() {
     setPending(city);
     setWeather(null);
     setError('');
+    // Provide maximal diagnostics for debugging env/key issues
     if (!weatherApiKey) {
-      setError('Weather API key missing. Set REACT_APP_WEATHER_KEY in your .env');
+      let envStateDetails = `REACT_APP_WEATHER_KEY = ${
+        typeof rawWeatherApiKey === "undefined"
+          ? "undefined"
+          : JSON.stringify(rawWeatherApiKey)
+      }`;
+      setError(
+        'Weather API key missing. Please ensure you have set REACT_APP_WEATHER_KEY in your .env file in the root of "travelsmart_planner" folder, the app was restarted after editing .env, and you have no extraneous whitespace or unquoted values.\n\n'
+        + "What the app currently sees: " + envStateDetails
+      );
       setLoading(false);
       return;
     }
