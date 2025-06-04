@@ -893,9 +893,34 @@ function App() {
       pageContent = <HomePage onNavigate={setPage} />;
   }
 
+  // Show a one-time hint at the top of the app if a .env variable seems missing (could be improved)
+  let envNotices = [];
+  if (!import.meta.env.VITE_WEATHER_KEY) {
+    envNotices.push('VITE_WEATHER_KEY');
+  }
+  if (!import.meta.env.VITE_COHERE_KEY) {
+    envNotices.push('VITE_COHERE_KEY');
+  }
+  if (!import.meta.env.VITE_AMADEUS_API_KEY || !import.meta.env.VITE_AMADEUS_API_SECRET) {
+    envNotices.push('VITE_AMADEUS_API_KEY / VITE_AMADEUS_API_SECRET');
+  }
+  // Show at-top alert if any primary variable missing (makes migration advice clear)
   return (
     <UserRouteContext.Provider value={plannerRoute}>
       <div className="app" style={{background:'#fafffb', minHeight:'100vh'}}>
+        {envNotices.length > 0 && (
+          <div style={{
+            background: '#f8b14f', color: '#fff', fontWeight: 600,
+            textAlign: "center", padding: 12, borderBottom: "2px solid #cb7cb6"
+          }}>
+            <div>
+              <span role="img" aria-label="info" style={{marginRight:6}}>⚠️</span>
+              Some .env API variables are missing: <span style={{fontWeight:800}}>{envNotices.join(', ')}</span>.&nbsp;
+              For Vite compatibility, rename all environment variables from <b>REACT_APP_*</b> to <b>VITE_*</b> and access them via <code>import.meta.env.VITE_YOUR_KEY</code>.<br />
+              After fixing .env, fully restart the dev server!
+            </div>
+          </div>
+        )}
         <Navbar currentPage={page} onNavigate={setPage}/>
         <main style={{padding:'0 0 64px 0'}}>
           <div className="container">
