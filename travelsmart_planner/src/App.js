@@ -71,17 +71,42 @@ function PlannerPage() {
   /**
    * Travel Planner Form for collecting user trip info.
    * Now, generates and displays an itinerary on submit.
+   * Integrates Amadeus API using env keys in process.env:
+   *   - process.env.REACT_APP_AMADEUS_API_KEY
+   *   - process.env.REACT_APP_AMADEUS_API_SECRET
    */
   const [form, setForm] = useState({
     from: '', to: '', dates: '', preferences: ''
   });
   const [itinerary, setItinerary] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  // Reference Amadeus API keys securely via process.env
+  const amadeusApiKey = process.env.REACT_APP_AMADEUS_API_KEY;
+  const amadeusApiSecret = process.env.REACT_APP_AMADEUS_API_SECRET;
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  // Very basic "dynamic" itinerary generator (can upgrade to real API later).
+  // STUB: Stub fetch to Amadeus; in real use, use amadeusApiKey/Secret for auth headers
+  async function fetchItineraryFromAmadeus(userData) {
+    // Placeholder for server call:
+    // e.g., await fetch('/api/planner', { headers: { 'x-amadeus-key': amadeusApiKey, ... } }) 
+    // For now, return static/dynamic locally
+    return [
+      `Depart from ${userData.from}`,
+      "Day 1: Arrival and hotel check-in.",
+      `Explore local cuisine. (${userData.preferences || 'Try the most famous dish.'})`,
+      "Day 2: Main sightseeing tour and museums.",
+      "Evening: Relax at a popular nearby cafe.",
+      "Day 3: Take a city walking tour. Buy souvenirs.",
+      `Return to ${userData.from} from ${userData.to}.`
+    ];
+  }
+
+  // PUBLIC_INTERFACE
   const generateItinerary = (userData) => {
-    // Demo result - normally would call Amadeus/GPT API
+    // Demo result - normally would call Amadeus/GPT API with amadeusApiKey, amadeusApiSecret
+    // Kept for fallback/demo
     return [
       `Depart from ${userData.from}`,
       "Day 1: Arrival and hotel check-in.",
@@ -93,9 +118,18 @@ function PlannerPage() {
     ];
   };
 
-  const handleSubmit = e => {
+  const handleSubmit = async e => {
     e.preventDefault();
-    const dynamic = generateItinerary(form);
+    setLoading(true);
+    // Use Amadeus keys here for real call
+    // Placeholder: Fetch demo itinerary, stub using Amadeus API key
+    let dynamic;
+    try {
+      dynamic = await fetchItineraryFromAmadeus(form);
+    } catch (err) {
+      // fallback if fetch fails, should not occur in demo
+      dynamic = generateItinerary(form);
+    }
     setItinerary({
       from: form.from,
       to: form.to,
@@ -103,6 +137,7 @@ function PlannerPage() {
       preferences: form.preferences,
       steps: dynamic
     });
+    setLoading(false);
   };
 
   return (
@@ -397,4 +432,4 @@ function App() {
   );
 }
 
-export default App;
+export default App;  
