@@ -1,9 +1,32 @@
-// Leaflet and react-leaflet imports are required at the top for ESLint compliance (import/first)
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, createContext, useContext } from 'react';
 import './App.css';
-import { MapContainer, TileLayer, Marker, Polyline, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Polyline, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
+// Context to share itinerary/route between planner and map
+const UserRouteContext = createContext();
+
+// Mapbox tile support: configure from .env if present
+const MAPBOX_KEY = process.env.REACT_APP_MAPBOX_KEY || '';
+const MAPBOX_STYLE = 'light-v11'; // or other Mapbox styles
+const MAPBOX_DEFAULT_URL =
+  `https://api.mapbox.com/styles/v1/mapbox/${MAPBOX_STYLE}/tiles/{z}/{x}/{y}?access_token=${MAPBOX_KEY}`;
+
+// Helper for Mapbox error
+function MapboxErrorBanner({ error }) {
+  if (!error) return null;
+  return (
+    <div style={{
+      color: '#fff',
+      background: '#e57373', border: '2px solid #f8b14f', borderRadius: 10,
+      padding: 12, margin: '10px 0', textAlign: 'center', fontWeight: 600
+    }}>
+      Map Error: {error}
+    </div>
+  );
+}
+
+console.log('process.env', process.env);
 // PUBLIC_INTERFACE
 function Navbar({ currentPage, onNavigate }) {
   /**
