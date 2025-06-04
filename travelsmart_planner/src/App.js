@@ -65,9 +65,7 @@ function HomePage({ onNavigate }) {
   );
 }
 
-import { MapContainer, TileLayer, Marker, Polyline, Popup, useMap } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-
+ 
 // PUBLIC_INTERFACE
 function PlannerPage() {
   /**
