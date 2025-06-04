@@ -430,11 +430,11 @@ function WeatherPage() {
  * PUBLIC_INTERFACE
  * Generates a travel suggestion using the Cohere API.
  * @param {string} userMsg The user message/question.
- * @param {string} cohereApiKey The API key for Cohere.
- * @returns {Promise<string>} Resolves to the AI's reply text or error.
+ * @param {string} cohereApiKey The API key for Cohere (from REACT_APP_COHERE_KEY).
+ * @returns {Promise<string>} Resolves to the AI's reply text or error message.
  */
 async function cohereAIAutoReply(userMsg, cohereApiKey) {
-  // -- API DOC: https://docs.cohere.com/reference/generate
+  // Uses Cohere's /v1/generate endpoint: https://docs.cohere.com/reference/generate
   const endpoint = "https://api.cohere.ai/v1/generate";
   try {
     const res = await fetch(endpoint, {
@@ -444,31 +444,40 @@ async function cohereAIAutoReply(userMsg, cohereApiKey) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "command", // Use "command" or fallback to "medium"
+        model: "command",
         prompt: userMsg,
         max_tokens: 120,
         temperature: 0.7,
+        // Optional improvement: you can add stop_sequences, etc.
         stop_sequences: [],
         return_likelihoods: "NONE"
       })
     });
     if (!res.ok) {
-      // Try to extract error message if available
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || `Cohere API error: ${res.status}`);
+      // Try to extract Cohere error message if available
+      let errMsg = `Cohere API error: ${res.status}`;
+      try {
+        const errBody = await res.json();
+        if (errBody.message) errMsg = errBody.message;
+      } catch (jsonErr) {
+        // Could not parse error JSON
+      }
+      throw new Error(errMsg);
     }
     const data = await res.json();
-    // The text field is found at data.generations[0].text
     if (
       data &&
       Array.isArray(data.generations) &&
-      data.generations.length &&
+      data.generations.length > 0 &&
       typeof data.generations[0].text === "string"
     ) {
+      // Clean final text output
       return "AI: " + data.generations[0].text.trim();
+    } else {
+      throw new Error("Malformed response from Cohere.");
     }
-    throw new Error("Malformed response from Cohere.");
   } catch (e) {
+    // Robust inline error handling for API/network/response issues
     return "AI (error): Could not get suggestion (" + e.message + ")";
   }
 }
