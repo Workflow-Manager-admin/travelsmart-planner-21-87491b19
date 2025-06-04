@@ -485,7 +485,11 @@ async function cohereAIAutoReply(userMsg, cohereApiKey) {
 // PUBLIC_INTERFACE
 function AISuggestionsPage() {
   /**
-   * GPT AI Suggestions Chat interface with real Cohere API connection.
+   * GPT AI Suggestions Chat interface using the Cohere API and a real API key from REACT_APP_COHERE_KEY.
+   * Features:
+   *   - Sends user message to Cohere API, gets AI reply, displays response and errors.
+   *   - Fully asynchronous, robust error handling and per-response UI feedback.
+   *   - Relevant inline comments for maintenance.
    */
   const [messages, setMessages] = useState([
     { user: false, text: "Hi! How can I help with your travel plans?" }
@@ -493,32 +497,39 @@ function AISuggestionsPage() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Use Cohere API key from environment variable
+  // Pull Cohere API Key from .env via react-scripts (must be prefixed with REACT_APP_)
   const cohereApiKey = process.env.REACT_APP_COHERE_KEY;
 
+  /**
+   * Handles sending of user input to the Cohere API, and updates chat UI with responses.
+   * Adds relevant error messages for missing API key, or API/network issues.
+   */
   const send = async (e) => {
     e.preventDefault();
     if (!input.trim() || loading) return;
 
-    // Show user message immediately and set loading state
+    // Immediately add the user's message to the chat and set loading
     setMessages((prev) => [...prev, { user: true, text: input }]);
     setLoading(true);
 
     if (!cohereApiKey) {
+      // Cohere key missing - fail fast and give user actionable error
       setMessages((prev) => [
         ...prev,
-        { user: false, text: "AI (error): Cohere API key is missing. Please set REACT_APP_COHERE_KEY." }
+        { user: false, text: "AI (error): Cohere API key is missing. Please set REACT_APP_COHERE_KEY in your .env file." }
       ]);
       setLoading(false);
       setInput('');
       return;
     }
 
-    // Fetch AI reply asynchronously and append
+    // Fetch AI reply. Any error or malformed response is handled within cohereAIAutoReply (displays error string)
     try {
+      // Await real network call to Cohere:
       const reply = await cohereAIAutoReply(input, cohereApiKey);
       setMessages((prev) => [...prev, { user: false, text: reply }]);
     } catch (err) {
+      // Defensive catch, though API should always return via the error string above
       setMessages((prev) => [
         ...prev,
         { user: false, text: "AI (error): Failed to get suggestion." }
@@ -542,6 +553,7 @@ function AISuggestionsPage() {
         border: '1px solid #b3eca7',
         minHeight:180
       }}>
+        {/* Show all chat bubbles */}
         {messages.map((m, i) =>
           <div key={i} style={{
             margin:'8px 0',
@@ -557,6 +569,7 @@ function AISuggestionsPage() {
             }}>{m.text}</span>
           </div>
         )}
+        {/* Typing indicator when waiting for AI */}
         {loading && (
           <div style={{
             margin:'8px 0',
