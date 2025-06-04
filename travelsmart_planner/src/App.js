@@ -62,17 +62,47 @@ function HomePage({ onNavigate }) {
   );
 }
 
+import { MapContainer, TileLayer, Marker, Polyline, Popup, useMap } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+
 // PUBLIC_INTERFACE
 function PlannerPage() {
   /**
    * Travel Planner Form for collecting user trip info.
-   * Non-functional mockup for now.
+   * Now, generates and displays an itinerary on submit.
    */
   const [form, setForm] = useState({
     from: '', to: '', dates: '', preferences: ''
   });
+  const [itinerary, setItinerary] = useState(null);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+
+  // Very basic "dynamic" itinerary generator (can upgrade to real API later).
+  const generateItinerary = (userData) => {
+    // Demo result - normally would call Amadeus/GPT API
+    return [
+      `Depart from ${userData.from}`,
+      "Day 1: Arrival and hotel check-in.",
+      `Explore local cuisine. (${userData.preferences || 'Try the most famous dish.'})`,
+      "Day 2: Main sightseeing tour and museums.",
+      "Evening: Relax at a popular nearby cafe.",
+      "Day 3: Take a city walking tour. Buy souvenirs.",
+      `Return to ${userData.from} from ${userData.to}.`
+    ];
+  };
+
+  const handleSubmit = e => {
+    e.preventDefault();
+    const dynamic = generateItinerary(form);
+    setItinerary({
+      from: form.from,
+      to: form.to,
+      dates: form.dates,
+      preferences: form.preferences,
+      steps: dynamic
+    });
+  };
 
   return (
     <div style={{paddingTop:120, maxWidth:440, margin:'0 auto'}}>
@@ -82,7 +112,7 @@ function PlannerPage() {
       </div>
       <form
         style={{display: 'flex', flexDirection: 'column', gap: 14, background:'#fff2', padding:'24px 20px', borderRadius:10}}
-        onSubmit={e => { e.preventDefault(); alert('This is a demo form!'); }}
+        onSubmit={handleSubmit}
       >
         <label>
           From
@@ -102,6 +132,20 @@ function PlannerPage() {
         </label>
         <button className="btn btn-large" type="submit" style={{background:'#cb7cb6'}}>Get Itinerary</button>
       </form>
+      {itinerary && (
+        <div style={{marginTop:30, background:'#fff', borderRadius:10, padding:18}}>
+          <h3 style={{color:'#f8b14f'}}>Your Itinerary</h3>
+          <div style={{fontWeight:500, marginBottom:8}}>
+            {itinerary.dates && <span>Dates: {itinerary.dates}<br/></span>}
+            {itinerary.from && itinerary.to && (
+              <span>From <strong>{itinerary.from}</strong> to <strong>{itinerary.to}</strong></span>
+            )}
+          </div>
+          <ol>
+            {itinerary.steps.map((step, idx) => <li key={idx}>{step}</li>)}
+          </ol>
+        </div>
+      )}
     </div>
   );
 }
