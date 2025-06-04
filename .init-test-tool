@@ -1,0 +1,4 @@
+{
+    "command": "npm run test",
+    "working_directory": "/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner"
+}
