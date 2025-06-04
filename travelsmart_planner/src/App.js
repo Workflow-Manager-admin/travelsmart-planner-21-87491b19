@@ -427,42 +427,95 @@ function WeatherPage() {
 }
 
 /**
- * Simple AI suggestion function. Produces dynamic but local results for demo.
- * In reality, would call a backend or API like Cohere/OpenAI using
- *   process.env.REACT_APP_COHERE_KEY for authentication.
+ * PUBLIC_INTERFACE
+ * Generates a travel suggestion using the Cohere API.
+ * @param {string} userMsg The user message/question.
+ * @param {string} cohereApiKey The API key for Cohere.
+ * @returns {Promise<string>} Resolves to the AI's reply text or error.
  */
-function simpleAIAutoReply(userMsg) {
-  // Placeholder to show how you'd use the Cohere API key:
-  // const cohereApiKey = process.env.REACT_APP_COHERE_KEY;
-  // fetch('https://api.cohere.ai/v1/generate', { headers: { 'Authorization': `Bearer ${cohereApiKey}` } });
-  const lower = userMsg.toLowerCase();
-  if (lower.includes("food")) return "AI: For local food, try the top-rated restaurants on your first night!";
-  if (lower.includes("museum")) return "AI: The city museum opens from 10am; don't miss the special art tour.";
-  if (lower.includes("weather")) return "AI: Check the forecast before packing – summer is usually warm with light rains.";
-  if (lower.includes("itinerary")) return "AI: Here is a sample itinerary: Day 1 - Explore the city; Day 2 - Take a guided tour; Day 3 - Relax at a local park.";
-  if (lower.includes("flight")) return "AI: Consider flying midweek for the lowest fares!";
-  if (lower.includes("budget")) return "AI: Set aside some budget for unique local experiences beyond just attractions.";
-  return "AI: That's a great question! I'll look up some helpful travel tips for you.";
+async function cohereAIAutoReply(userMsg, cohereApiKey) {
+  // -- API DOC: https://docs.cohere.com/reference/generate
+  const endpoint = "https://api.cohere.ai/v1/generate";
+  try {
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${cohereApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "command", // Use "command" or fallback to "medium"
+        prompt: userMsg,
+        max_tokens: 120,
+        temperature: 0.7,
+        stop_sequences: [],
+        return_likelihoods: "NONE"
+      })
+    });
+    if (!res.ok) {
+      // Try to extract error message if available
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || `Cohere API error: ${res.status}`);
+    }
+    const data = await res.json();
+    // The text field is found at data.generations[0].text
+    if (
+      data &&
+      Array.isArray(data.generations) &&
+      data.generations.length &&
+      typeof data.generations[0].text === "string"
+    ) {
+      return "AI: " + data.generations[0].text.trim();
+    }
+    throw new Error("Malformed response from Cohere.");
+  } catch (e) {
+    return "AI (error): Could not get suggestion (" + e.message + ")";
+  }
 }
 
 // PUBLIC_INTERFACE
 function AISuggestionsPage() {
   /**
-   * GPT AI Suggestions Chat interface (dynamic for demo now).
+   * GPT AI Suggestions Chat interface with real Cohere API connection.
    */
   const [messages, setMessages] = useState([
     { user: false, text: "Hi! How can I help with your travel plans?" }
   ]);
   const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const send = (e) => {
+  // Use Cohere API key from environment variable
+  const cohereApiKey = process.env.REACT_APP_COHERE_KEY;
+
+  const send = async (e) => {
     e.preventDefault();
-    if (!input.trim()) return;
-    setMessages([
-      ...messages,
-      { user: true, text: input },
-      { user: false, text: simpleAIAutoReply(input) }
-    ]);
+    if (!input.trim() || loading) return;
+
+    // Show user message immediately and set loading state
+    setMessages((prev) => [...prev, { user: true, text: input }]);
+    setLoading(true);
+
+    if (!cohereApiKey) {
+      setMessages((prev) => [
+        ...prev,
+        { user: false, text: "AI (error): Cohere API key is missing. Please set REACT_APP_COHERE_KEY." }
+      ]);
+      setLoading(false);
+      setInput('');
+      return;
+    }
+
+    // Fetch AI reply asynchronously and append
+    try {
+      const reply = await cohereAIAutoReply(input, cohereApiKey);
+      setMessages((prev) => [...prev, { user: false, text: reply }]);
+    } catch (err) {
+      setMessages((prev) => [
+        ...prev,
+        { user: false, text: "AI (error): Failed to get suggestion." }
+      ]);
+    }
+    setLoading(false);
     setInput('');
   };
 
@@ -495,16 +548,39 @@ function AISuggestionsPage() {
             }}>{m.text}</span>
           </div>
         )}
+        {loading && (
+          <div style={{
+            margin:'8px 0',
+            alignSelf: 'flex-start'
+          }}>
+            <span style={{
+              background: '#cb7cb6',
+              color:'#fff',
+              padding:'8px 12px',
+              borderRadius:7,
+              fontSize:'1rem',
+              opacity: 0.72,
+              display: 'inline-block'
+            }}>AI is typing...</span>
+          </div>
+        )}
       </div>
       <form style={{display:'flex', gap:8}} onSubmit={send}>
         <input
           type="text"
           value={input}
+          disabled={loading}
           onChange={e => setInput(e.target.value)}
           placeholder="Ask me anything about your trip..."
           style={{flex:1, fontSize:'1rem', padding:'10px 12px', borderRadius:4, border:'1px solid #b3eca7'}}
         />
-        <button className="btn" style={{background:'#f8b14f', color:'#fff', fontWeight:600}} type="submit">Send</button>
+        <button
+          className="btn"
+          style={{background:'#f8b14f', color:'#fff', fontWeight:600}}
+          type="submit"
+          disabled={loading || !input.trim()}>
+          {loading ? "..." : "Send"}
+        </button>
       </form>
     </div>
   );
