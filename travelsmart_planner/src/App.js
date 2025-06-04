@@ -6,9 +6,15 @@ import 'leaflet/dist/leaflet.css';
 // Context to share itinerary/route between planner and map
 const UserRouteContext = createContext();
 
-// Mapbox tile support: configure from .env if present
-const MAPBOX_KEY = process.env.REACT_APP_MAPBOX_KEY || '';
-const MAPBOX_STYLE = 'light-v11'; // or other Mapbox styles
+/**
+ * IMPORTANT: For Vite support, all environment variables must be referenced as import.meta.env.VITE_YOUR_KEY.
+ * To fully work with Vite, rename any .env variables from REACT_APP_* to VITE_*.
+ * Example: .env entry should be VITE_WEATHER_KEY instead of REACT_APP_WEATHER_KEY, and so on.
+ */
+
+// Mapbox tile support: configure from .env if present (Vite: VITE_MAPBOX_KEY, CRA: REACT_APP_MAPBOX_KEY)
+const MAPBOX_KEY = import.meta.env.VITE_MAPBOX_KEY || '';
+const MAPBOX_STYLE = 'light-v11';
 const MAPBOX_DEFAULT_URL =
   `https://api.mapbox.com/styles/v1/mapbox/${MAPBOX_STYLE}/tiles/{z}/{x}/{y}?access_token=${MAPBOX_KEY}`;
 
@@ -105,9 +111,9 @@ function PlannerPage({ onItinerary }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Read Amadeus API keys from .env (must be prefixed with REACT_APP_)
-  const amadeusApiKey = process.env.REACT_APP_AMADEUS_API_KEY;
-  const amadeusApiSecret = process.env.REACT_APP_AMADEUS_API_SECRET;
+  // Read Amadeus API keys from .env (must be prefixed with VITE_ for Vite! If using CRA, use REACT_APP_)
+  const amadeusApiKey = import.meta.env.VITE_AMADEUS_API_KEY;
+  const amadeusApiSecret = import.meta.env.VITE_AMADEUS_API_SECRET;
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -522,7 +528,8 @@ function MapPage() {
 function WeatherPage() {
   // Robust API key diagnostics: display exactly what the app sees,
   // and sanitize leading/trailing whitespace.
-  let rawWeatherApiKey = process.env.REACT_APP_WEATHER_KEY;
+  // Use VITE_WEATHER_KEY via import.meta.env for Vite (or REACT_APP_WEATHER_KEY for CRA, but prefer VITE_*)
+  let rawWeatherApiKey = import.meta.env.VITE_WEATHER_KEY;
   let weatherApiKey = (
     typeof rawWeatherApiKey === "string"
       ? rawWeatherApiKey.trim()
@@ -676,7 +683,7 @@ function WeatherPage() {
  * PUBLIC_INTERFACE
  * Generates a travel suggestion using the Cohere API.
  * @param {string} userMsg The user message/question.
- * @param {string} cohereApiKey The API key for Cohere (from REACT_APP_COHERE_KEY).
+ * @param {string} cohereApiKey The API key for Cohere (from VITE_COHERE_KEY if using Vite).
  * @returns {Promise<string>} Resolves to the AI's reply text or error message.
  */
 async function cohereAIAutoReply(userMsg, cohereApiKey) {
@@ -743,8 +750,8 @@ function AISuggestionsPage() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Pull Cohere API Key from .env via react-scripts (must be prefixed with REACT_APP_)
-  const cohereApiKey = process.env.REACT_APP_COHERE_KEY;
+  // Pull Cohere API Key from .env (must be prefixed with VITE_ for Vite support!)
+  const cohereApiKey = import.meta.env.VITE_COHERE_KEY;
 
   /**
    * Handles sending of user input to the Cohere API, and updates chat UI with responses.
@@ -762,7 +769,7 @@ function AISuggestionsPage() {
       // Cohere key missing - fail fast and give user actionable error
       setMessages((prev) => [
         ...prev,
-        { user: false, text: "AI (error): Cohere API key is missing. Please set REACT_APP_COHERE_KEY in your .env file." }
+        { user: false, text: "AI (error): Cohere API key is missing. Please set VITE_COHERE_KEY in your .env file (not REACT_APP_COHERE_KEY), restart your dev server, and try again." }
       ]);
       setLoading(false);
       setInput('');
