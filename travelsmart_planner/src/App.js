@@ -66,32 +66,133 @@ function HomePage({ onNavigate }) {
 }
 
  
-// PUBLIC_INTERFACE
+/**
+ * PUBLIC_INTERFACE
+ * Travel Planner Page using Amadeus API for real-time itineraries.
+ *
+ * Handles authentication using environment-provided API Key and Secret.
+ * Fetches a real itinerary from Amadeus Flight Offers when the form is submitted.
+ * Handles errors, displays loading states, and provides guidance if API keys are missing.
+ */
 function PlannerPage() {
-  /**
-   * Travel Planner Form for collecting user trip info.
-   * Now, generates and displays an itinerary on submit.
-   * Integrates Amadeus API using env keys in process.env:
-   *   - process.env.REACT_APP_AMADEUS_API_KEY
-   *   - process.env.REACT_APP_AMADEUS_API_SECRET
-   */
   const [form, setForm] = useState({
     from: '', to: '', dates: '', preferences: ''
   });
   const [itinerary, setItinerary] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Reference Amadeus API keys securely via process.env
+  // Read Amadeus API keys from .env (must be prefixed with REACT_APP_)
   const amadeusApiKey = process.env.REACT_APP_AMADEUS_API_KEY;
   const amadeusApiSecret = process.env.REACT_APP_AMADEUS_API_SECRET;
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
 
-  // STUB: Stub fetch to Amadeus; in real use, use amadeusApiKey/Secret for auth headers
+  // PUBLIC_INTERFACE: Authenticate with Amadeus OAuth2 API to get Bearer token
+  async function getAmadeusAccessToken() {
+    // See: https://developers.amadeus.com/self-service-apis/docs/getting-started/authorize-access/api-key
+    const url = "https://test.api.amadeus.com/v1/security/oauth2/token";
+    const body = new URLSearchParams({
+      grant_type: "client_credentials",
+      client_id: amadeusApiKey,
+      client_secret: amadeusApiSecret,
+    }).toString();
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body,
+    });
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(
+        `Could not authenticate with Amadeus: ${response.status} ${errText}`
+      );
+    }
+    const json = await response.json();
+    return json.access_token;
+  }
+
+  // PUBLIC_INTERFACE: Call Amadeus Flight Offers Search API
   async function fetchItineraryFromAmadeus(userData) {
-    // Placeholder for server call:
-    // e.g., await fetch('/api/planner', { headers: { 'x-amadeus-key': amadeusApiKey, ... } }) 
-    // For now, return static/dynamic locally
+    if (!amadeusApiKey || !amadeusApiSecret) {
+      throw new Error(
+        'Amadeus API key or secret is missing. Please set REACT_APP_AMADEUS_API_KEY and REACT_APP_AMADEUS_API_SECRET in your .env.'
+      );
+    }
+    // Step 1: Get access token
+    const token = await getAmadeusAccessToken();
+
+    // Step 2: Parse and prepare parameters for search
+    // Accepts city names or IATA (try to infer if possible)
+    const from = (userData.from || '').trim().toUpperCase().slice(0, 3);
+    const to = (userData.to || '').trim().toUpperCase().slice(0, 3);
+
+    // Parse dates: Accepts '2024-08-10 to 2024-08-20' or single; default to today+1
+    let dateOfTravel = '';
+    if (userData.dates) {
+      // Try to parse first date in "YYYY-MM-DD" or "YYYY-MM-DD to YYYY-MM-DD"
+      const dateMatch = userData.dates.match(/(\d{4}-\d{2}-\d{2})/);
+      dateOfTravel = dateMatch ? dateMatch[1] : '';
+    }
+    if (!dateOfTravel) {
+      // Default: Tomorrow
+      dateOfTravel = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+    }
+
+    // Step 3: Query Amadeus Flight Offers Search API
+    const searchParams = new URLSearchParams({
+      originLocationCode: from,
+      destinationLocationCode: to,
+      departureDate: dateOfTravel,
+      adults: "1",
+      nonStop: "false",
+      max: "3", // get up to 3 options for demo
+    }).toString();
+
+    const url = `https://test.api.amadeus.com/v2/shopping/flight-offers?${searchParams}`;
+    const res = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(
+        `Amadeus itinerary API error: ${res.status} ${errText}`
+      );
+    }
+    const data = await res.json();
+
+    // Step 4: Parse relevant details from Amadeus API results
+    if (!data.data || !Array.isArray(data.data) || data.data.length === 0) {
+      throw new Error('No itineraries found. Check city codes or try a different trip.');
+    }
+
+    // For each offer, extract basic flight segment data and price
+    const results = data.data.map((offer, idx) => {
+      const itinerary = offer.itineraries?.[0]; // only outbound for now
+      const firstSegment = itinerary?.segments?.[0];
+      const dep = firstSegment?.departure;
+      const arr = firstSegment?.arrival;
+      // Build summary string
+      return (
+        `Option ${idx + 1}: ` +
+        `Depart ${dep?.iataCode || from} ` +
+        `(${dep?.at?.slice(0, 16) || dateOfTravel}) → ` +
+        `Arrive ${arr?.iataCode || to} (${arr?.at?.slice(0, 16) || "?"}), ` +
+        `Price: ${offer.price?.total || "? "}${offer.price?.currency || ""} ` +
+        (userData.preferences ? ` - Pref: ${userData.preferences}` : "")
+      );
+    });
+    return results;
+  }
+
+  // PUBLIC_INTERFACE: Static fallback itinerary if fetch fails or not configured
+  function generateItinerary(userData) {
     return [
       `Depart from ${userData.from}`,
       "Day 1: Arrival and hotel check-in.",
@@ -103,81 +204,147 @@ function PlannerPage() {
     ];
   }
 
-  // PUBLIC_INTERFACE
-  const generateItinerary = (userData) => {
-    // Demo result - normally would call Amadeus/GPT API with amadeusApiKey, amadeusApiSecret
-    // Kept for fallback/demo
-    return [
-      `Depart from ${userData.from}`,
-      "Day 1: Arrival and hotel check-in.",
-      `Explore local cuisine. (${userData.preferences || 'Try the most famous dish.'})`,
-      "Day 2: Main sightseeing tour and museums.",
-      "Evening: Relax at a popular nearby cafe.",
-      "Day 3: Take a city walking tour. Buy souvenirs.",
-      `Return to ${userData.from} from ${userData.to}.`
-    ];
-  };
-
-  const handleSubmit = async e => {
+  // Handle form submission: authenticate, call API, parse/display result
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    // Use Amadeus keys here for real call
-    // Placeholder: Fetch demo itinerary, stub using Amadeus API key
-    let dynamic;
+    setError(null);
+    setItinerary(null);
+
     try {
-      dynamic = await fetchItineraryFromAmadeus(form);
+      // Get itinerary from Amadeus, or fallback if no keys
+      let results;
+      if (amadeusApiKey && amadeusApiSecret) {
+        results = await fetchItineraryFromAmadeus(form);
+      } else {
+        throw new Error(
+          'Amadeus API key or secret is missing. Please set REACT_APP_AMADEUS_API_KEY and REACT_APP_AMADEUS_API_SECRET in your .env.'
+        );
+      }
+      setItinerary({
+        from: form.from,
+        to: form.to,
+        dates: form.dates,
+        preferences: form.preferences,
+        steps: results
+      });
     } catch (err) {
-      // fallback if fetch fails, should not occur in demo
-      dynamic = generateItinerary(form);
+      // Show user-friendly error & fallback
+      setError(
+        "Could not fetch itinerary from Amadeus: " +
+        (err?.message || "Unknown error") +
+        ". Showing static demo itinerary below."
+      );
+      setItinerary({
+        from: form.from,
+        to: form.to,
+        dates: form.dates,
+        preferences: form.preferences,
+        steps: generateItinerary(form)
+      });
+    } finally {
+      setLoading(false);
     }
-    setItinerary({
-      from: form.from,
-      to: form.to,
-      dates: form.dates,
-      preferences: form.preferences,
-      steps: dynamic
-    });
-    setLoading(false);
   };
 
   return (
-    <div style={{paddingTop:120, maxWidth:440, margin:'0 auto'}}>
-      <h2 style={{color: '#f8b14f', marginBottom: 4}}>Travel Planner</h2>
-      <div className="description" style={{marginBottom: 24}}>
+    <div style={{ paddingTop: 120, maxWidth: 440, margin: '0 auto' }}>
+      <h2 style={{ color: '#f8b14f', marginBottom: 4 }}>Travel Planner</h2>
+      <div className="description" style={{ marginBottom: 24 }}>
         Fill in your travel details to generate a personalized itinerary.
       </div>
       <form
-        style={{display: 'flex', flexDirection: 'column', gap: 14, background:'#fff2', padding:'24px 20px', borderRadius:10}}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 14,
+          background: '#fff2',
+          padding: '24px 20px',
+          borderRadius: 10
+        }}
         onSubmit={handleSubmit}
       >
         <label>
-          From
-          <input name="from" type="text" value={form.from} onChange={handleChange} required style={inputStyle} />
+          From (city or IATA code)
+          <input
+            name="from"
+            type="text"
+            value={form.from}
+            onChange={handleChange}
+            required
+            style={inputStyle}
+            placeholder="e.g., London or LHR"
+          />
         </label>
         <label>
-          To
-          <input name="to" type="text" value={form.to} onChange={handleChange} required style={inputStyle} />
+          To (city or IATA code)
+          <input
+            name="to"
+            type="text"
+            value={form.to}
+            onChange={handleChange}
+            required
+            style={inputStyle}
+            placeholder="e.g., Paris or CDG"
+          />
         </label>
         <label>
           Dates
-          <input name="dates" type="text" value={form.dates} onChange={handleChange} placeholder="e.g. 2024-08-15 to 2024-08-20" style={inputStyle} />
+          <input
+            name="dates"
+            type="text"
+            value={form.dates}
+            onChange={handleChange}
+            placeholder="e.g. 2024-09-10 to 2024-09-13"
+            style={inputStyle}
+          />
         </label>
         <label>
           Preferences
-          <input name="preferences" type="text" value={form.preferences} onChange={handleChange} placeholder="Beaches, food, museums..." style={inputStyle} />
+          <input
+            name="preferences"
+            type="text"
+            value={form.preferences}
+            onChange={handleChange}
+            placeholder="Beaches, food, museums..."
+            style={inputStyle}
+          />
         </label>
-        <button className="btn btn-large" type="submit" style={{background:'#cb7cb6'}}>Get Itinerary</button>
+        <button
+          className="btn btn-large"
+          type="submit"
+          style={{ background: '#cb7cb6' }}
+          disabled={loading}
+        >
+          {loading ? "Loading..." : "Get Itinerary"}
+        </button>
       </form>
+      {error && (
+        <div style={{
+          color: '#dc3545',
+          background: '#fff7f7',
+          border: '1px solid #f8b14f',
+          borderRadius: 8,
+          marginTop: 16,
+          padding: 12,
+          fontWeight: 500
+        }}>
+          {error}
+        </div>
+      )}
       {itinerary && (
-        <div style={{marginTop:30, background:'#fff', borderRadius:10, padding:18}}>
-          <h3 style={{color:'#f8b14f'}}>Your Itinerary</h3>
-          <div style={{fontWeight:500, marginBottom:8}}>
-            {itinerary.dates && <span>Dates: {itinerary.dates}<br/></span>}
+        <div style={{ marginTop: 30, background: '#fff', borderRadius: 10, padding: 18 }}>
+          <h3 style={{ color: '#f8b14f' }}>Your Itinerary</h3>
+          <div style={{ fontWeight: 500, marginBottom: 8 }}>
+            {itinerary.dates && <span>Dates: {itinerary.dates}<br /></span>}
             {itinerary.from && itinerary.to && (
-              <span>From <strong>{itinerary.from}</strong> to <strong>{itinerary.to}</strong></span>
+              <span>
+                From <strong>{itinerary.from}</strong> to <strong>{itinerary.to}</strong>
+              </span>
             )}
           </div>
           <ol>
+            {/* Each step shows real Amadeus result or fallback */}
             {itinerary.steps.map((step, idx) => <li key={idx}>{step}</li>)}
           </ol>
         </div>
