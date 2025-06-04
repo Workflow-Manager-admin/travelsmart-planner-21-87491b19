@@ -244,13 +244,17 @@ function PlannerPage({ onItinerary }) {
           'Amadeus API key or secret is missing. Please set REACT_APP_AMADEUS_API_KEY and REACT_APP_AMADEUS_API_SECRET in your .env.'
         );
       }
-      setItinerary({
+      const newItinerary = {
         from: form.from,
         to: form.to,
         dates: form.dates,
         preferences: form.preferences,
         steps: results
-      });
+      };
+      setItinerary(newItinerary);
+      if (typeof onItinerary === "function") {
+        onItinerary(newItinerary);
+      }
     } catch (err) {
       // Show user-friendly error & fallback
       setError(
@@ -258,13 +262,17 @@ function PlannerPage({ onItinerary }) {
         (err?.message || "Unknown error") +
         ". Showing static demo itinerary below."
       );
-      setItinerary({
+      const demoItinerary = {
         from: form.from,
         to: form.to,
         dates: form.dates,
         preferences: form.preferences,
         steps: generateItinerary(form)
-      });
+      };
+      setItinerary(demoItinerary);
+      if (typeof onItinerary === "function") {
+        onItinerary(demoItinerary);
+      }
     } finally {
       setLoading(false);
     }
