@@ -522,7 +522,8 @@ function MapPage() {
 function WeatherPage() {
   // Robust API key diagnostics: display exactly what the app sees,
   // and sanitize leading/trailing whitespace.
-  let rawWeatherApiKey = process.env.REACT_APP_WEATHER_KEY;
+  let rawWeatherApiKey =import.meta.env.VITE_WEATHER_KEY
+
   let weatherApiKey = (
     typeof rawWeatherApiKey === "string"
       ? rawWeatherApiKey.trim()
