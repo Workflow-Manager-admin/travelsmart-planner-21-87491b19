@@ -158,26 +158,86 @@ const inputStyle = {
   width:'100%'
 };
 
+/**
+ * Try to convert city name to rough lat/lon using a static "database".
+ */
+function getLatLng(city) {
+  // Demo dataset for main European cities. A real app would use proper API.
+  const dict = {
+    london: [51.5074, -0.1278],
+    paris: [48.8566, 2.3522],
+    berlin: [52.52, 13.405],
+    rome: [41.9028, 12.4964],
+    athens: [37.9838, 23.7275],
+    madrid: [40.4168, -3.7038],
+    lisbon: [38.7223, -9.1393],
+    reykjavik: [64.1466, -21.9426],
+    newyork: [40.7128, -74.006],
+    tokyo: [35.6895, 139.6917]
+  };
+  if (!city) return null;
+  const lower = city.trim().toLowerCase().replace(/[, ]/g,"");
+  return dict[lower] || null;
+}
+
 // PUBLIC_INTERFACE
 function MapPage() {
   /**
-   * Placeholder for interactive map (Leaflet etc).
-   * For now, shows a styled mockup map area.
+   * Interactive MapPage: shows a live Leaflet map. If itinerary available, plots route.
+   * Falls back to Paris if nothing set.
    */
+  // Quick local itinerary demo: in a real app would get this from app state/context.
+  const [route, setRoute] = useState(() => {
+    // For demo, try sample cities.
+    return {
+      from: "London",
+      to: "Paris"
+    };
+  });
+
+  // Geocode "from" and "to"
+  const fromCoords = getLatLng(route.from);
+  const toCoords = getLatLng(route.to);
+
+  // Center center: midpoint or default Paris
+  let center = [48.8566, 2.3522];
+  if (fromCoords && toCoords) {
+    center = [
+      (fromCoords[0] + toCoords[0]) / 2,
+      (fromCoords[1] + toCoords[1]) / 2
+    ];
+  } else if (fromCoords) {
+    center = fromCoords;
+  } else if (toCoords) {
+    center = toCoords;
+  }
+
   return (
     <div style={{paddingTop:120, display:'flex', flexDirection:'column', alignItems:'center'}}>
       <h2 style={{color:'#cb7cb6'}}>Interactive Map</h2>
       <div className="description" style={{maxWidth:600,marginBottom:16}}>
         Explore destinations, see points of interest, and visualize your routes.
       </div>
-      <div style={{
-        width: '100%', maxWidth: 800, minHeight: 360,
-        background: 'linear-gradient(135deg, #b3eca7 30%, #cb7cb6 90%)',
-        borderRadius: 14, border: '2px solid #f8b14f', margin: '18px 0',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff'
-      }}>
-        <span style={{fontSize: 44, color: '#f8b14f'}}>🗺️</span>
-        <span style={{marginLeft:16}}>Map will appear here</span>
+      <div style={{ width: '100%', maxWidth: 800, minHeight: 360, margin: '18px 0', borderRadius: 14, border: '2px solid #f8b14f', overflow: 'hidden', background:'#e8f9ed'}}>
+        <MapContainer center={center} zoom={5} style={{ height: 360, width: "100%" }} scrollWheelZoom={true}>
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          {fromCoords && (
+            <Marker position={fromCoords}>
+              <Popup>Start: {route.from}</Popup>
+            </Marker>
+          )}
+          {toCoords && (
+            <Marker position={toCoords}>
+              <Popup>Destination: {route.to}</Popup>
+            </Marker>
+          )}
+          {fromCoords && toCoords && (
+            <Polyline positions={[fromCoords, toCoords]} color="#f8b14f" weight={5} />
+          )}
+        </MapContainer>
       </div>
     </div>
   );
