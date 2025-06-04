@@ -279,8 +279,7 @@ function MapPage() {
   );
 }
 
-import { useEffect } from 'react';
-
+ 
 // PUBLIC_INTERFACE
 function WeatherPage() {
   /**
