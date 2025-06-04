@@ -97,7 +97,7 @@ function HomePage({ onNavigate }) {
  * Fetches a real itinerary from Amadeus Flight Offers when the form is submitted.
  * Handles errors, displays loading states, and provides guidance if API keys are missing.
  */
-function PlannerPage() {
+function PlannerPage({ onItinerary }) {
   const [form, setForm] = useState({
     from: '', to: '', dates: '', preferences: ''
   });
@@ -406,26 +406,29 @@ function getLatLng(city) {
   return dict[lower] || null;
 }
 
-// PUBLIC_INTERFACE
 function MapPage() {
   /**
-   * Interactive MapPage: shows a live Leaflet map. If itinerary available, plots route.
-   * Falls back to Paris if nothing set.
+   * Interactive MapPage: now supports Mapbox tiles from .env or OSM fallback,
+   * uses route context if provided by Planner, plots dynamic point-to-point routes, shows map errors.
    */
-  // Quick local itinerary demo: in a real app would get this from app state/context.
-  const [route, setRoute] = useState(() => {
-    // For demo, try sample cities.
-    return {
-      from: "London",
-      to: "Paris"
-    };
-  });
+  // Read route from context, fallback demo if not set
+  const userRoute = useContext(UserRouteContext) || {};
+  // Optionally, allow Map page to locally override route for demo/test
 
-  // Geocode "from" and "to"
+  // Allow user to simulate switching between OSM/Mapbox if no API key
+  const [error, setError] = useState('');
+  const [showTiles, setShowTiles] = useState(true);
+
+  // Accept coordinates for map (from/to) from planner/user context, or fallback demo cities
+  const route = {
+    from: userRoute?.from || "London",
+    to: userRoute?.to || "Paris"
+  };
+
   const fromCoords = getLatLng(route.from);
   const toCoords = getLatLng(route.to);
 
-  // Center center: midpoint or default Paris
+  // Center map - default to midpoint or fallback Paris
   let center = [48.8566, 2.3522];
   if (fromCoords && toCoords) {
     center = [
@@ -438,33 +441,66 @@ function MapPage() {
     center = toCoords;
   }
 
+  // Try Mapbox if API key present, otherwise OSM fallback
+  let tileUrl = '';
+  let attribution = '';
+  if (MAPBOX_KEY) {
+    tileUrl = MAPBOX_DEFAULT_URL;
+    attribution =
+      'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, Tiles &copy;<a href="https://www.mapbox.com/">Mapbox</a>';
+  } else {
+    tileUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+    attribution =
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
+  }
+
+  const handleTileError = (e) => {
+    setError("Could not load map tiles. " +
+      (MAPBOX_KEY
+        ? "Check your Mapbox API key in .env or your network connection."
+        : "OpenStreetMap may be unavailable."));
+    setShowTiles(false); // Hide the map
+  };
+
   return (
-    <div style={{paddingTop:120, display:'flex', flexDirection:'column', alignItems:'center'}}>
-      <h2 style={{color:'#cb7cb6'}}>Interactive Map</h2>
-      <div className="description" style={{maxWidth:600,marginBottom:16}}>
+    <div style={{ paddingTop: 120, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <h2 style={{ color: '#cb7cb6' }}>Interactive Map</h2>
+      <div className="description" style={{ maxWidth: 600, marginBottom: 16 }}>
         Explore destinations, see points of interest, and visualize your routes.
       </div>
-      <div style={{ width: '100%', maxWidth: 800, minHeight: 360, margin: '18px 0', borderRadius: 14, border: '2px solid #f8b14f', overflow: 'hidden', background:'#e8f9ed'}}>
-        <MapContainer center={center} zoom={5} style={{ height: 360, width: "100%" }} scrollWheelZoom={true}>
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-          {fromCoords && (
-            <Marker position={fromCoords}>
-              <Popup>Start: {route.from}</Popup>
-            </Marker>
-          )}
-          {toCoords && (
-            <Marker position={toCoords}>
-              <Popup>Destination: {route.to}</Popup>
-            </Marker>
-          )}
-          {fromCoords && toCoords && (
-            <Polyline positions={[fromCoords, toCoords]} color="#f8b14f" weight={5} />
-          )}
-        </MapContainer>
-      </div>
+      <MapboxErrorBanner error={error} />
+      {(showTiles) ? (
+        <div style={{ width: '100%', maxWidth: 800, minHeight: 360, margin: '18px 0', borderRadius: 14, border: '2px solid #f8b14f', overflow: 'hidden', background: '#e8f9ed' }}>
+          <MapContainer center={center} zoom={5} style={{ height: 360, width: "100%" }} scrollWheelZoom={true}>
+            <TileLayer
+              attribution={attribution}
+              url={tileUrl}
+              onError={handleTileError}
+              maxZoom={18}
+            />
+            {fromCoords && (
+              <Marker position={fromCoords}>
+                <Popup>Start: {route.from}</Popup>
+              </Marker>
+            )}
+            {toCoords && (
+              <Marker position={toCoords}>
+                <Popup>Destination: {route.to}</Popup>
+              </Marker>
+            )}
+            {fromCoords && toCoords && (
+              <Polyline positions={[fromCoords, toCoords]} color="#f8b14f" weight={5} />
+            )}
+          </MapContainer>
+        </div>
+      ) : (
+        <div style={{ color: "#cb7cb6", margin: "32px auto", textAlign: "center" }}>
+          The map could not be displayed.<br />
+          {MAPBOX_KEY ?
+            "There may be a problem with your Mapbox API key or Mapbox service."
+            : "OpenStreetMap tiles are not available. Please check your connection or Mapbox configuration."}
+        </div>
+      )}
     </div>
   );
 }
@@ -810,19 +846,28 @@ function AISuggestionsPage() {
   );
 }
 
-// PUBLIC_INTERFACE
 function App() {
   /**
-   * Main TravelSmart Planner container, switches between main feature pages.
+   * Main TravelSmart Planner container, switches between main feature pages and provides user route data via context.
    */
   const [page, setPage] = useState('home');
+  // Track itinerary/route state at app level to pass to Map
+  const [plannerRoute, setPlannerRoute] = useState({});
+
+  // Share route state: when planner generates an itinerary, we capture from/to and dates
+  function handleItineraryUpdate(itinerary) {
+    // itinerary: { from, to, dates, preferences, steps }
+    if (itinerary && itinerary.from && itinerary.to) {
+      setPlannerRoute({ from: itinerary.from, to: itinerary.to });
+    }
+  }
 
   let pageContent;
   switch (page) {
     case 'home':
       pageContent = <HomePage onNavigate={setPage} />; break;
     case 'planner':
-      pageContent = <PlannerPage />; break;
+      pageContent = <PlannerPage onItinerary={handleItineraryUpdate} />; break;
     case 'map':
       pageContent = <MapPage />; break;
     case 'weather':
@@ -834,14 +879,16 @@ function App() {
   }
 
   return (
-    <div className="app" style={{background:'#fafffb', minHeight:'100vh'}}>
-      <Navbar currentPage={page} onNavigate={setPage}/>
-      <main style={{padding:'0 0 64px 0'}}>
-        <div className="container">
-          {pageContent}
-        </div>
-      </main>
-    </div>
+    <UserRouteContext.Provider value={plannerRoute}>
+      <div className="app" style={{background:'#fafffb', minHeight:'100vh'}}>
+        <Navbar currentPage={page} onNavigate={setPage}/>
+        <main style={{padding:'0 0 64px 0'}}>
+          <div className="container">
+            {pageContent}
+          </div>
+        </main>
+      </div>
+    </UserRouteContext.Provider>
   );
 }
 
