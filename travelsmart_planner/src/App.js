@@ -522,8 +522,7 @@ function MapPage() {
 function WeatherPage() {
   // Robust API key diagnostics: display exactly what the app sees,
   // and sanitize leading/trailing whitespace.
-  let rawWeatherApiKey =import.meta.env.VITE_WEATHER_KEY
-
+  let rawWeatherApiKey = process.env.REACT_APP_WEATHER_KEY;
   let weatherApiKey = (
     typeof rawWeatherApiKey === "string"
       ? rawWeatherApiKey.trim()
@@ -539,10 +538,10 @@ function WeatherPage() {
   // Return a simple emoji icon for given OpenWeatherMap summary
   function getWeatherIcon(main) {
     switch ((main || '').toLowerCase()) {
-      case 'clouds': return '🌥️';
+      case'clouds': return '🌥️';
       case 'clear': return '☀️';
       case 'rain': return '🌧️';
-      case 'drizzle': return '🌦️';
+      case 'drizzle': return '🌦️';    
       case 'snow': return '❄️';
       case 'thunderstorm': return '⛈️';
       case 'mist': case 'fog': return '🌫️';
