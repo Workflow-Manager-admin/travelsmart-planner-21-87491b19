@@ -447,82 +447,18 @@ function MapPage() {
 }
 
  
-// PUBLIC_INTERFACE
+/**
+ * Weather page: fetches live weather using OpenWeatherMap for the specified user destination (city).
+ * Uses REACT_APP_WEATHER_KEY from .env (process.env).
+ * Allows input of any city; fetches and displays weather in real time after user request.
+ */
 function WeatherPage() {
-  /**
-   * Weather page: fetches live weather using OpenWeatherMap and displays card for each selected destination.
-   * Uses REACT_APP_WEATHER_KEY from .env (process.env).
-   * User can choose from a preset list or input a custom city.
-   */
-  const weatherApiKey = process.env.REACT_APP_WEATHER_KEY; // Secure API key reference
-
-  // List of cities to showcase; can be adjusted for actual selection later
-  const defaultCities = ['London', 'Athens', 'Reykjavik', 'Paris', 'Tokyo'];
-
-  const [cities, setCities] = useState(defaultCities);
-  const [weatherData, setWeatherData] = useState({});
-  const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
+  const weatherApiKey = process.env.REACT_APP_WEATHER_KEY;
+  const [searchCity, setSearchCity] = useState('');
+  const [pending, setPending] = useState(''); // city being searched
+  const [weather, setWeather] = useState(null);
   const [error, setError] = useState('');
-
-  // PUBLIC_INTERFACE
-  useEffect(() => {
-    // Fetch current weather for all cities on load or cities update
-    // Only fire if API key exists
-    if (!weatherApiKey) {
-      setError('Weather API key missing. Set REACT_APP_WEATHER_KEY in .env');
-      return;
-    }
-    setLoading(true);
-    setError('');
-    // Fetch in parallel
-    Promise.all(
-      cities.map((city) =>
-        fetch(
-          `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=metric&appid=${weatherApiKey}`
-        )
-          .then(async (res) => {
-            if (!res.ok) throw new Error(`API error: ${res.status} for ${city}`);
-            const data = await res.json();
-            return { city, data };
-          })
-          .catch((err) => ({ city, error: err.message }))
-      )
-    )
-      .then((results) => {
-        // Build dictionary city -> weather details (or error)
-        const byCity = {};
-        results.forEach((r) => {
-          if (r.data) {
-            // Map OpenWeather fields to UI model
-            byCity[r.city] = {
-              temp: Math.round(r.data.main.temp),
-              desc: r.data.weather[0].description,
-              icon: getWeatherIcon(r.data.weather[0].main)
-            };
-          } else {
-            byCity[r.city] = { temp: '--', desc: 'Could not fetch', icon: '❓', error: r.error };
-          }
-        });
-        setWeatherData(byCity);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError('Problem loading weather: ' + err.message);
-        setLoading(false);
-      });
-    // eslint-disable-next-line
-  }, [cities, weatherApiKey]);
-
-  // PUBLIC_INTERFACE
-  function handleAddCity(e) {
-    e.preventDefault();
-    const newCity = input.trim();
-    if (newCity && !cities.map(c => c.toLowerCase()).includes(newCity.toLowerCase())) {
-      setCities([newCity, ...cities]);
-      setInput('');
-    }
-  }
+  const [loading, setLoading] = useState(false);
 
   // Return a simple emoji icon for given OpenWeatherMap summary
   function getWeatherIcon(main) {
@@ -539,56 +475,115 @@ function WeatherPage() {
   }
 
   // PUBLIC_INTERFACE
+  // Fetches weather for a given city; updates weather and error states
+  async function fetchWeather(city) {
+    setLoading(true);
+    setPending(city);
+    setWeather(null);
+    setError('');
+    if (!weatherApiKey) {
+      setError('Weather API key missing. Set REACT_APP_WEATHER_KEY in your .env');
+      setLoading(false);
+      return;
+    }
+    try {
+      const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=metric&appid=${weatherApiKey}`;
+      const res = await fetch(url);
+      if (!res.ok) {
+        let msg = `API error: ${res.status}`;
+        try { const json = await res.json(); if (json.message) msg += ` - ${json.message}`; } catch (e) {}
+        throw new Error(msg);
+      }
+      const data = await res.json();
+      setWeather({
+        temp: Math.round(data.main.temp),
+        desc: data.weather[0].description,
+        city: data.name,
+        country: data.sys.country,
+        icon: getWeatherIcon(data.weather[0].main),
+        wind: data.wind.speed,
+        humidity: data.main.humidity,
+        code: data.weather[0].main
+      });
+    } catch (e) {
+      setError('Could not fetch weather for "' + city + `": ` + (e.message || 'Unknown error'));
+      setWeather(null);
+    } finally {
+      setLoading(false);
+      setPending('');
+    }
+  }
+
+  // PUBLIC_INTERFACE: Handle form ("search city") submission
+  function handleSubmit(e) {
+    e.preventDefault();
+    const city = searchCity.trim();
+    if (!city) return;
+    fetchWeather(city);
+  }
+
+  // Optionally, show a default city's weather when page loads (can change this if desired)
+  useEffect(() => {
+    // Show Paris as the initial weather result for demo
+    fetchWeather('Paris');
+    // eslint-disable-next-line
+  }, []);
+
   return (
-    <div style={{paddingTop:120}}>
-      <h2 style={{color:'#b3eca7'}}>Weather by Destination</h2>
-      <div className="description" style={{marginBottom:16}}>
-        See what to pack with up-to-date weather! Powered by <a href="https://openweathermap.org/" style={{color:'#f8b14f'}}>OpenWeatherMap</a>
+    <div style={{ paddingTop: 120, minHeight: 350 }}>
+      <h2 style={{ color: '#b3eca7' }}>Weather by Destination</h2>
+      <div className="description" style={{ marginBottom: 16 }}>
+        Check the latest weather for your travel spot! Powered by{' '}
+        <a href="https://openweathermap.org/" style={{ color: '#f8b14f' }}>OpenWeatherMap</a>
       </div>
-      <form style={{display:'flex', gap:8, marginBottom:16}} onSubmit={handleAddCity}>
+      <form style={{ display: 'flex', gap: 8, marginBottom: 16, maxWidth: 400 }} onSubmit={handleSubmit}>
         <input
           type="text"
-          placeholder="Add city (e.g. Vienna)"
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          style={{padding:'8px 10px', borderRadius:4, border:'1px solid #cb7cb6'}}
+          placeholder="Enter city (e.g. Vienna)"
+          value={searchCity}
+          onChange={e => setSearchCity(e.target.value)}
+          style={{ padding: '8px 10px', borderRadius: 4, border: '1px solid #cb7cb6', flex: 1 }}
+          disabled={loading}
         />
-        <button className="btn" style={{background:'#cb7cb6', color:'#fff'}} type="submit" disabled={loading || !input.trim()}>Add</button>
+        <button className="btn" style={{ background: '#cb7cb6', color: '#fff' }} type="submit" disabled={loading || !searchCity.trim()}>
+          {loading ? 'Fetching...' : 'Show Weather'}
+        </button>
       </form>
       {error && (
-        <div style={{color:'#e57373', marginBottom:10, background:'#fffbea', border:'1px solid #f8b14f', padding:8, borderRadius:6}}>
+        <div style={{ color: '#e57373', marginBottom: 10, background: '#fffbea', border: '1px solid #f8b14f', padding: 8, borderRadius: 6 }}>
           {error}
         </div>
       )}
       {loading && <div>Loading weather data...</div>}
-      <div style={{display:'flex', gap:22, flexWrap:'wrap', marginTop:18}}>
-        {cities.map((city) => {
-          const w = weatherData[city];
-          return (
-            <div key={city} style={{
-              background:'#fff',
-              padding:'18px 22px',
-              borderRadius:10,
-              boxShadow:'0 4px 24px 0 rgba(0,0,0,0.07)',
-              minWidth:160,
-              color:'#222',
-              display:'flex',
-              flexDirection:'column',
-              alignItems:'center',
-              opacity: w && w.error ? 0.6 : 1
-            }}>
-              <div style={{fontSize:41}}>{(w && w.icon) || '🌡️'}</div>
-              <div style={{fontWeight:600,fontSize:'1.18rem',color:'#f8b14f'}}>{city}</div>
-              <div style={{fontWeight:500, fontSize:22, margin:'6px 0'}}>{(w && w.temp)!==undefined ? w.temp : '--'}&#8451;</div>
-              <div>{(w && w.desc) || '...'}</div>
-              {w && w.error &&
-                <div style={{color:'#d66', fontSize:'0.95em', marginTop:10}} title={w.error}>
-                  Could not fetch
-                </div>}
-            </div>
-          );
-        })}
-      </div>
+
+      {weather && (
+        <div style={{
+          marginTop: 18,
+          background: '#fff',
+          borderRadius: 12,
+          boxShadow: '0 4px 24px 0 rgba(0,0,0,0.07)',
+          maxWidth: 310,
+          margin: '0 auto',
+          padding: '24px 20px',
+          color: '#222',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center'
+        }}>
+          <div style={{ fontSize: 55 }}>{weather.icon}</div>
+          <div style={{ fontWeight: 700, fontSize: '1.25rem', color: '#f8b14f', marginBottom: 2 }}>
+            {weather.city}{weather.country ? ', ' + weather.country : ''}
+          </div>
+          <div style={{ fontWeight: 600, fontSize: 30, margin: '8px 0' }}>
+            {weather.temp}&deg;C
+          </div>
+          <div style={{ textTransform: 'capitalize', marginBottom: 8 }}>{weather.desc}</div>
+          <div style={{ fontSize: '1em', color: '#777', marginBottom: 0 }}>Humidity: {weather.humidity}% &nbsp;|&nbsp; Wind: {weather.wind} m/s</div>
+        </div>
+      )}
+      {!weather && !loading && !error && (
+        <div style={{ color: '#cb7cb6', marginTop: 24 }}>Enter a city to see live weather.</div>
+      )}
     </div>
   );
 }
