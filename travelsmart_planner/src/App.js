@@ -281,10 +281,25 @@ function WeatherPage() {
   );
 }
 
+/**
+ * Simple AI suggestion function. Produces dynamic but local results for demo.
+ * In reality, would call a backend or API like Cohere/OpenAI.
+ */
+function simpleAIAutoReply(userMsg) {
+  const lower = userMsg.toLowerCase();
+  if (lower.includes("food")) return "AI: For local food, try the top-rated restaurants on your first night!";
+  if (lower.includes("museum")) return "AI: The city museum opens from 10am; don't miss the special art tour.";
+  if (lower.includes("weather")) return "AI: Check the forecast before packing – summer is usually warm with light rains.";
+  if (lower.includes("itinerary")) return "AI: Here is a sample itinerary: Day 1 - Explore the city; Day 2 - Take a guided tour; Day 3 - Relax at a local park.";
+  if (lower.includes("flight")) return "AI: Consider flying midweek for the lowest fares!";
+  if (lower.includes("budget")) return "AI: Set aside some budget for unique local experiences beyond just attractions.";
+  return "AI: That's a great question! I'll look up some helpful travel tips for you.";
+}
+
 // PUBLIC_INTERFACE
 function AISuggestionsPage() {
   /**
-   * GPT AI Suggestions Chat interface (mockup for now).
+   * GPT AI Suggestions Chat interface (dynamic for demo now).
    */
   const [messages, setMessages] = useState([
     { user: false, text: "Hi! How can I help with your travel plans?" }
@@ -294,7 +309,11 @@ function AISuggestionsPage() {
   const send = (e) => {
     e.preventDefault();
     if (!input.trim()) return;
-    setMessages([...messages, { user: true, text: input }, { user: false, text: "AI: (This is a demo!) Here's a tip for your trip." }]);
+    setMessages([
+      ...messages,
+      { user: true, text: input },
+      { user: false, text: simpleAIAutoReply(input) }
+    ]);
     setInput('');
   };
 
