@@ -279,48 +279,149 @@ function MapPage() {
   );
 }
 
+import { useEffect } from 'react';
+
 // PUBLIC_INTERFACE
 function WeatherPage() {
   /**
-   * Weather page: shows mockup weather cards for destinations.
-   * Real implementation would use process.env.REACT_APP_WEATHER_KEY for API access.
+   * Weather page: fetches live weather using OpenWeatherMap and displays card for each selected destination.
+   * Uses REACT_APP_WEATHER_KEY from .env (process.env).
+   * User can choose from a preset list or input a custom city.
    */
-  // Secure Weather API key via process.env
-  const weatherApiKey = process.env.REACT_APP_WEATHER_KEY;
+  const weatherApiKey = process.env.REACT_APP_WEATHER_KEY; // Secure API key reference
 
-  // STUB: In real use, would fetch with weatherApiKey, e.g.:
-  // fetch(`https://api.weatherapi.com/v1/forecast?city=London&apikey=${weatherApiKey}`)
-  const mockWeather = [
-    { city: 'London', temp: 19, desc: 'Cloudy', icon: '🌥️' },
-    { city: 'Athens', temp: 31, desc: 'Sunny', icon: '☀️' },
-    { city: 'Reykjavik', temp: 9, desc: 'Rainy', icon: '🌧️' }
-  ];
+  // List of cities to showcase; can be adjusted for actual selection later
+  const defaultCities = ['London', 'Athens', 'Reykjavik', 'Paris', 'Tokyo'];
 
+  const [cities, setCities] = useState(defaultCities);
+  const [weatherData, setWeatherData] = useState({});
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  // PUBLIC_INTERFACE
+  useEffect(() => {
+    // Fetch current weather for all cities on load or cities update
+    // Only fire if API key exists
+    if (!weatherApiKey) {
+      setError('Weather API key missing. Set REACT_APP_WEATHER_KEY in .env');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    // Fetch in parallel
+    Promise.all(
+      cities.map((city) =>
+        fetch(
+          `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=metric&appid=${weatherApiKey}`
+        )
+          .then(async (res) => {
+            if (!res.ok) throw new Error(`API error: ${res.status} for ${city}`);
+            const data = await res.json();
+            return { city, data };
+          })
+          .catch((err) => ({ city, error: err.message }))
+      )
+    )
+      .then((results) => {
+        // Build dictionary city -> weather details (or error)
+        const byCity = {};
+        results.forEach((r) => {
+          if (r.data) {
+            // Map OpenWeather fields to UI model
+            byCity[r.city] = {
+              temp: Math.round(r.data.main.temp),
+              desc: r.data.weather[0].description,
+              icon: getWeatherIcon(r.data.weather[0].main)
+            };
+          } else {
+            byCity[r.city] = { temp: '--', desc: 'Could not fetch', icon: '❓', error: r.error };
+          }
+        });
+        setWeatherData(byCity);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError('Problem loading weather: ' + err.message);
+        setLoading(false);
+      });
+    // eslint-disable-next-line
+  }, [cities, weatherApiKey]);
+
+  // PUBLIC_INTERFACE
+  function handleAddCity(e) {
+    e.preventDefault();
+    const newCity = input.trim();
+    if (newCity && !cities.map(c => c.toLowerCase()).includes(newCity.toLowerCase())) {
+      setCities([newCity, ...cities]);
+      setInput('');
+    }
+  }
+
+  // Return a simple emoji icon for given OpenWeatherMap summary
+  function getWeatherIcon(main) {
+    switch ((main || '').toLowerCase()) {
+      case 'clouds': return '🌥️';
+      case 'clear': return '☀️';
+      case 'rain': return '🌧️';
+      case 'drizzle': return '🌦️';
+      case 'snow': return '❄️';
+      case 'thunderstorm': return '⛈️';
+      case 'mist': case 'fog': return '🌫️';
+      default: return '🌡️';
+    }
+  }
+
+  // PUBLIC_INTERFACE
   return (
     <div style={{paddingTop:120}}>
       <h2 style={{color:'#b3eca7'}}>Weather by Destination</h2>
-      <div className="description" style={{marginBottom:16}}>See what to pack with up-to-date weather!</div>
-      {/* Example stub showing usage of env key (for developers): */}
-      {/* <pre>API Weather Key: {weatherApiKey ? '[available]' : '[missing]'}</pre> */}
+      <div className="description" style={{marginBottom:16}}>
+        See what to pack with up-to-date weather! Powered by <a href="https://openweathermap.org/" style={{color:'#f8b14f'}}>OpenWeatherMap</a>
+      </div>
+      <form style={{display:'flex', gap:8, marginBottom:16}} onSubmit={handleAddCity}>
+        <input
+          type="text"
+          placeholder="Add city (e.g. Vienna)"
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          style={{padding:'8px 10px', borderRadius:4, border:'1px solid #cb7cb6'}}
+        />
+        <button className="btn" style={{background:'#cb7cb6', color:'#fff'}} type="submit" disabled={loading || !input.trim()}>Add</button>
+      </form>
+      {error && (
+        <div style={{color:'#e57373', marginBottom:10, background:'#fffbea', border:'1px solid #f8b14f', padding:8, borderRadius:6}}>
+          {error}
+        </div>
+      )}
+      {loading && <div>Loading weather data...</div>}
       <div style={{display:'flex', gap:22, flexWrap:'wrap', marginTop:18}}>
-        {mockWeather.map((w) => (
-          <div key={w.city} style={{
-            background:'#fff',
-            padding:'18px 22px',
-            borderRadius:10,
-            boxShadow:'0 4px 24px 0 rgba(0,0,0,0.07)',
-            minWidth:160,
-            color:'#222',
-            display:'flex',
-            flexDirection:'column',
-            alignItems:'center'
-          }}>
-            <div style={{fontSize:41}}>{w.icon}</div>
-            <div style={{fontWeight:600,fontSize:'1.18rem',color:'#f8b14f'}}>{w.city}</div>
-            <div style={{fontWeight:500, fontSize:22, margin:'6px 0'}}>{w.temp}&#8451;</div>
-            <div>{w.desc}</div>
-          </div>
-        ))}
+        {cities.map((city) => {
+          const w = weatherData[city];
+          return (
+            <div key={city} style={{
+              background:'#fff',
+              padding:'18px 22px',
+              borderRadius:10,
+              boxShadow:'0 4px 24px 0 rgba(0,0,0,0.07)',
+              minWidth:160,
+              color:'#222',
+              display:'flex',
+              flexDirection:'column',
+              alignItems:'center',
+              opacity: w && w.error ? 0.6 : 1
+            }}>
+              <div style={{fontSize:41}}>{(w && w.icon) || '🌡️'}</div>
+              <div style={{fontWeight:600,fontSize:'1.18rem',color:'#f8b14f'}}>{city}</div>
+              <div style={{fontWeight:500, fontSize:22, margin:'6px 0'}}>{(w && w.temp)!==undefined ? w.temp : '--'}&#8451;</div>
+              <div>{(w && w.desc) || '...'}</div>
+              {w && w.error &&
+                <div style={{color:'#d66', fontSize:'0.95em', marginTop:10}} title={w.error}>
+                  Could not fetch
+                </div>}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
