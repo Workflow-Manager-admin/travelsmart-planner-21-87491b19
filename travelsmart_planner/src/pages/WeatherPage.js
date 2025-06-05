@@ -50,6 +50,26 @@ function WeatherPage() {
       <div className="section-description">
         See current and forecasted weather for your travel destinations.
       </div>
+
+      {!weatherApiKey && (
+        <div style={{
+          background: "#ffe4e1",
+          color: "#b86a57",
+          border: "1.5px solid #f8b14f",
+          borderRadius: 8,
+          padding: "10px 15px",
+          marginBottom: 12,
+          fontWeight: 500,
+          textAlign: "center"
+        }}>
+          <b>Missing OpenWeatherMap API Key.</b>
+          <br/>To enable live weather, set <code>REACT_APP_WEATHER_KEY</code> in your <code>.env</code>.
+          <br/><span style={{color:"#cb7cb6", fontSize:"0.93em"}}>.env example:<br/>
+            REACT_APP_WEATHER_KEY=your_key
+          </span>
+        </div>
+      )}
+
       <div className="weather-cards-container">
         {weatherResults.map((res, idx) => (
           <div className="weather-card" key={idx}>
@@ -63,7 +83,7 @@ function WeatherPage() {
         ))}
       </div>
       <div style={{ color: "#888", fontSize: "0.98em", marginTop: 10 }}>
-        <b>API Note:</b> Integrate with OpenWeatherMap or similar API (API key in requirements).
+        <b>API Note:</b> Provide <code>REACT_APP_WEATHER_KEY</code> in your .env file for live weather powered by OpenWeatherMap.
       </div>
     </section>
   );
