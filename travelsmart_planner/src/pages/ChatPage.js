@@ -21,6 +21,9 @@ function ChatPage() {
 
   const chatBottomRef = useRef(null);
 
+  // Load Cohere API key
+  const cohereKey = process.env.REACT_APP_COHERE_KEY || '';
+
   // Scroll to bottom whenever messages update
   useEffect(() => {
     chatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -39,13 +42,15 @@ function ChatPage() {
     setInput("");
     setPending(true);
 
-    // Simulate async AI reply (replace with API post to GPT/Cohere)
+    // If key missing, use demo/fallback reply, else here would be real fetch
     setTimeout(() => {
       setMessages((msgs) => [
         ...msgs,
         {
           sender: "ai",
-          text: "Here's a travel tip: Research local transportation options in advance to save time and reduce stress on your trip! (API placeholder)"
+          text: !cohereKey
+            ? "You are seeing demo AI tips. Add your Cohere API key in .env for live suggestions! (API placeholder)"
+            : "Here's a travel tip: Research local transportation options in advance to save time and reduce stress on your trip! (API placeholder, would hit Cohere API)"
         }
       ]);
       setPending(false);
