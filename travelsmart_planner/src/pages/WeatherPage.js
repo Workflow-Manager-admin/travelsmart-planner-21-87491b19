@@ -41,6 +41,9 @@ function WeatherPage() {
     }
   ]);
 
+  // Get weather key from env
+  const weatherApiKey = process.env.REACT_APP_WEATHER_KEY || '';
+
   return (
     <section className="weather-section">
       <div className="section-title">Weather Forecast</div>
