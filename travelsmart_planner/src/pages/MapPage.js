@@ -2,6 +2,14 @@ import React from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 
+/*
+  Uses Mapbox API for maps if a .env key is provided:
+
+    REACT_APP_MAPBOX_KEY
+
+  Otherwise, falls back to Stadia demo tiles and warns the user.
+*/
+
 // Fix Leaflet icon import issue when used with React
 import L from "leaflet";
 delete L.Icon.Default.prototype._getIconUrl;
