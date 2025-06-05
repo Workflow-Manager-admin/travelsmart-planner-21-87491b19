@@ -1,36 +1,43 @@
 import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import './App.css';
+import NavBar from './components/NavBar';
+import HomePage from './pages/HomePage';
+import PlannerPage from './pages/PlannerPage';
+import MapPage from './pages/MapPage';
+import WeatherPage from './pages/WeatherPage';
+import ChatPage from './pages/ChatPage';
 
+// PUBLIC_INTERFACE
 function App() {
-  return (
-    <div className="app">
-      <nav className="navbar">
-        <div className="container">
-          <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-            <div className="logo">
-              <span className="logo-symbol">*</span> KAVIA AI
-            </div>
-            <button className="btn">Template Button</button>
-          </div>
-        </div>
-      </nav>
+  // To re-mount main scrollable region at route change for better UX
+  function ScrollToTop() {
+    const { pathname } = useLocation();
+    React.useEffect(() => {
+      window.scrollTo(0, 0);
+    }, [pathname]);
+    return null;
+  }
 
-      <main>
-        <div className="container">
-          <div className="hero">
-            <div className="subtitle">AI Workflow Manager Template</div>
-            
-            <h1 className="title">travelsmart_planner</h1>
-            
-            <div className="description">
-              Start building your application.
-            </div>
-            
-            <button className="btn btn-large">Button</button>
+  return (
+    <Router>
+      <ScrollToTop />
+      <div className="app">
+        <NavBar />
+        <main className="main-content">
+          <div className="container">
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/planner" element={<PlannerPage />} />
+              <Route path="/map" element={<MapPage />} />
+              <Route path="/weather" element={<WeatherPage />} />
+              <Route path="/ai-chat" element={<ChatPage />} />
+              <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
           </div>
-        </div>
-      </main>
-    </div>
+        </main>
+      </div>
+    </Router>
   );
 }
 
