@@ -1,9 +1,328 @@
 :root {
-  --base-light: #00ffff;
-  --base-dark: #00008b;
-  --text-color: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --border-color: rgba(255, 255, 255, 0.1);
+  /* Theme colors for TravelSmart Planner */
+  --primary: #f8b14f;
+  --secondary: #cb7cb6;
+  --accent: #b3eca7;
+  --light-bg: #fcfcfc;
+  --surface: #fff;
+  --base-light: #f8b14f;
+  --base-dark: #23253a;
+  --text-color: #23253a;
+  --text-secondary: #444c52;
+  --border-color: #e2e7ed;
+  --shadow: 0 6px 24px #0000000f;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  background-color: var(--light-bg);
+  color: var(--text-color);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--light-bg);
+}
+
+.navbar {
+  background: var(--surface);
+  color: var(--text-color);
+  box-shadow: 0 2px 12px #e2e7ed33;
+  padding: 16px 0;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  border-bottom: 1px solid var(--border-color);
+  z-index: 100;
+}
+
+.logo {
+  font-size: 1.23rem;
+  font-weight: 700;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  letter-spacing: 0.06em;
+}
+
+.logo-symbol {
+  color: var(--secondary);
+  font-weight: 900;
+  font-size: 1.6rem;
+}
+
+.nav-links {
+  display: flex;
+  gap: 22px;
+  align-items: center;
+}
+
+.nav-link {
+  background: none;
+  border: none;
+  color: var(--text-color);
+  font-size: 1rem;
+  padding: 8px 0;
+  margin: 0 8px;
+  cursor: pointer;
+  position: relative;
+  font-weight: 500;
+  transition: color 0.16s;
+  outline: none;
+}
+
+.nav-link.active,
+.nav-link:focus {
+  color: var(--primary);
+}
+
+.main-content {
+  flex: 1;
+  padding-top: 82px;
+  padding-bottom: 36px;
+  min-height: 86vh;
+  background: var(--light-bg);
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0 24px;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 34px;
+  text-align: center;
+  padding-top: 108px;
+  padding-bottom: 50px;
+}
+
+.subtitle {
+  color: var(--secondary);
+  font-weight: 600;
+  font-size: 1.3rem;
+}
+
+.title {
+  font-size: 3.15rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin: 0 0 10px;
+  line-height: 1.1;
+  text-shadow: 0 2px 16px #f8b14f25;
+}
+
+.description {
+  font-size: 1.16rem;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+  max-width: 680px;
+}
+
+.btn {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 24px;
+  font-size: 1.03rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.17s;
+  box-shadow: 0 2px 8px #f8b14f33;
+}
+
+.btn:hover,
+.btn:focus {
+  background: #e69009;
+}
+
+.btn-large {
+  padding: 15px 34px;
+  font-size: 1.18rem;
+}
+
+.section-title {
+  font-size: 2.2rem;
+  color: var(--primary);
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.section-description {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  margin-bottom: 24px;
+}
+
+.form-section, .weather-section, .map-section, .chat-section {
+  background: var(--surface);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 32px 18px 20px;
+  margin-bottom: 22px;
+}
+
+.form-group {
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.form-label {
+  margin-bottom: 5px;
+  color: var(--text-color);
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.form-input, .form-select, .chat-input {
+  font-size: 1rem;
+  padding: 9px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  margin-bottom: 4px;
+  width: 100%;
+  background: #faf9fc;
+}
+
+.form-input:focus, .chat-input:focus {
+  border-color: var(--primary);
+  outline: none;
+}
+
+.weather-cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  margin: 18px 0;
+}
+
+.weather-card {
+  background: var(--accent);
+  color: var(--base-dark);
+  border-radius: 11px;
+  box-shadow: 0 4px 18px #b3eca730;
+  min-width: 212px;
+  padding: 19px 24px 21px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.weather-title {
+  font-weight: 600;
+}
+
+.weather-temp {
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: var(--primary);
+  margin-bottom: 6px;
+}
+
+.weather-forecast {
+  margin-top: 11px;
+  color: #333;
+  font-size: 0.97rem;
+}
+
+.leaflet-container {
+  min-height: 420px;
+  min-width: 100%;
+  border-radius: 14px;
+  margin: 0 auto;
+  box-shadow: 0 4px 18px #23253a11;
+}
+
+.map-loading {
+  color: var(--secondary);
+  text-align: center;
+  font-size: 1.21rem;
+  padding: 36px 0;
+}
+
+.chat-window {
+  height: 440px;
+  background: #faf9fe;
+  display: flex;
+  flex-direction: column;
+  border-radius: 11px;
+  box-shadow: 0 6px 24px #cb7cb621;
+  overflow: hidden;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 22px 18px 10px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.chat-bubble {
+  padding: 12px 18px;
+  border-radius: 15px;
+  max-width: 75%;
+  font-size: 1.01rem;
+  box-shadow: 0 2px 8px #cb7cb613;
+  margin-bottom: 6px;
+  word-break: break-word;
+}
+
+.chat-bubble.user {
+  background: var(--primary);
+  color: #fff;
+  align-self: flex-end;
+}
+
+.chat-bubble.ai {
+  background: var(--secondary);
+  color: #fff;
+  align-self: flex-start;
+}
+
+.chat-input-row {
+  display: flex;
+  gap: 8px;
+  border-top: 1px solid var(--border-color);
+  padding: 12px 14px;
+  background: #faf9fe;
+}
+
+.chat-input {
+  flex: 1;
+  font-size: 1rem;
+  border-radius: 7px;
+  border: 1px solid var(--border-color);
+  padding: 7px 13px;
+}
+
+@media (max-width: 800px) {
+  .hero, .container {
+    padding: 0 8px;
+    padding-top: 90px;
+  }
+  .main-content {
+    padding: 74px 0 24px 0;
+  }
+  .leaflet-container {
+    min-height: 300px;
+  }
 }
 
 body {
