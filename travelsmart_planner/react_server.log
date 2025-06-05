@@ -125,3 +125,32 @@ ERROR in ./src/pages/HomePage.js 6:0-47
 Module not found: Error: Can't resolve 'react-router-dom' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/src/pages'
 
 webpack compiled with 6 errors
+Compiling...
+Failed to compile.
+
+Module not found: Error: Can't resolve 'react-router-dom' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/src'
+ERROR in ./src/App.js 5:0-97
+Module not found: Error: Can't resolve 'react-router-dom' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/src'
+
+ERROR in ./src/App.js 11:0-46
+Module not found: Error: Can't resolve './pages/WeatherPage' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/src'
+
+ERROR in ./src/App.js 12:0-40
+Module not found: Error: Can't resolve './pages/ChatPage' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/src'
+
+ERROR in ./src/components/NavBar.js 5:0-43
+Module not found: Error: Can't resolve 'react-router-dom' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/src/components'
+
+ERROR in ./src/pages/HomePage.js 6:0-47
+Module not found: Error: Can't resolve 'react-router-dom' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/src/pages'
+
+ERROR in ./src/pages/MapPage.js 5:0-71
+Module not found: Error: Can't resolve 'react-leaflet' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/src/pages'
+
+ERROR in ./src/pages/MapPage.js 6:0-34
+Module not found: Error: Can't resolve 'leaflet/dist/leaflet.css' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/src/pages'
+
+ERROR in ./src/pages/MapPage.js 9:0-24
+Module not found: Error: Can't resolve 'leaflet' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/src/pages'
+
+webpack compiled with 8 errors
