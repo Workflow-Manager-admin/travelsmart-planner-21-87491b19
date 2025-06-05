@@ -25,17 +25,35 @@ function PlannerPage() {
   const [itinerary, setItinerary] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // API keys from environment variables (see .env)
+  const amadeusKey = process.env.REACT_APP_AMADEUS_API_KEY || '';
+  const amadeusSecret = process.env.REACT_APP_AMADEUS_API_SECRET || '';
+
   // Handles form field change
   function handleChange(e) {
     const { name, value } = e.target;
     setForm(f => ({ ...f, [name]: value }));
   }
 
-  // Stub: Placeholder for API integration
+  // On submit, require API keys; if missing, show error and skip real fetch.
   function handleGenerateItinerary(e) {
     e.preventDefault();
     setLoading(true);
-    // Simulate async fetch; insert fetch/axios with Amadeus API here
+
+    if (!amadeusKey || !amadeusSecret) {
+      setTimeout(() => {
+        setItinerary(null);
+        setLoading(false);
+      }, 600); // short wait for error UI
+      return;
+    }
+
+    // Example: Real fetch/axios call to Amadeus API would go here:
+    // fetch('https://test.api.amadeus.com/v1/some-endpoint', {
+    //   headers: { Authorization: ...amadeusKey... }
+    // })
+
+    // Simulate success for demo
     setTimeout(() => {
       setItinerary({
         destination: form.destination,
