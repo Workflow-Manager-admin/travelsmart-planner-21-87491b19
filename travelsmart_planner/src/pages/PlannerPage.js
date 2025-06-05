@@ -1,5 +1,17 @@
 import React, { useState } from "react";
 
+/*
+  Uses Amadeus Travel APIs with API Key and Secret loaded from .env:
+
+    REACT_APP_AMADEUS_API_KEY
+    REACT_APP_AMADEUS_API_SECRET
+
+  In Create React App, you MUST prefix custom environment variables with REACT_APP_
+  to access them via process.env.REACT_APP_... at runtime.
+
+  If the keys are missing, a user-facing diagnostic appears and API calls are not made.
+*/
+
 // PUBLIC_INTERFACE
 function PlannerPage() {
   const [form, setForm] = useState({
