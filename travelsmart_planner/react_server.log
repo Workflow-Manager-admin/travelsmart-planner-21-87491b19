@@ -50,3 +50,29 @@ ERROR in ./src/App.js 12:0-40
 Module not found: Error: Can't resolve './pages/ChatPage' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/src'
 
 webpack compiled with 7 errors
+Compiling...
+Failed to compile.
+
+Module not found: Error: Can't resolve 'react-router-dom' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/src'
+ERROR in ./src/App.js 5:0-97
+Module not found: Error: Can't resolve 'react-router-dom' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/src'
+
+ERROR in ./src/App.js 8:0-40
+Module not found: Error: Can't resolve './pages/HomePage' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/src'
+
+ERROR in ./src/App.js 9:0-46
+Module not found: Error: Can't resolve './pages/PlannerPage' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/src'
+
+ERROR in ./src/App.js 10:0-38
+Module not found: Error: Can't resolve './pages/MapPage' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/src'
+
+ERROR in ./src/App.js 11:0-46
+Module not found: Error: Can't resolve './pages/WeatherPage' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/src'
+
+ERROR in ./src/App.js 12:0-40
+Module not found: Error: Can't resolve './pages/ChatPage' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/src'
+
+ERROR in ./src/components/NavBar.js 5:0-43
+Module not found: Error: Can't resolve 'react-router-dom' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/src/components'
+
+webpack compiled with 7 errors
