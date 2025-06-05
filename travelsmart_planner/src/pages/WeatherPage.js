@@ -1,5 +1,16 @@
 import React, { useState } from "react";
 
+/*
+  Uses OpenWeatherMap API with key loaded from .env:
+
+    REACT_APP_WEATHER_KEY
+
+  To use this key, define it in your .env file at the root of your project:
+    REACT_APP_WEATHER_KEY=your_OWM_key
+
+  If not provided, a warning banner is shown and no API requests are made.
+*/
+
 // PUBLIC_INTERFACE
 function WeatherPage() {
   // Static demo data; replace with actual weather API integration

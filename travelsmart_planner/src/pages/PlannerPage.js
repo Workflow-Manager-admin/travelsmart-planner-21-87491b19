@@ -70,6 +70,28 @@ function PlannerPage() {
       <div className="section-description">
         Enter your trip details. We'll generate a personalized itinerary for you.
       </div>
+
+      {/* Show error if no API keys */}
+      {(!amadeusKey || !amadeusSecret) && (
+        <div style={{
+          background: "#ffe4e1",
+          color: "#a94442",
+          border: "1.5px solid #f8b14f",
+          borderRadius: 8,
+          padding: "12px 16px",
+          marginBottom: 14,
+          fontWeight: 500,
+          textAlign: "center"
+        }}>
+          <b>Missing Amadeus API Key or Secret.</b><br/>
+          Please add <code>REACT_APP_AMADEUS_API_KEY</code> and <code>REACT_APP_AMADEUS_API_SECRET</code> to your <code>.env</code> file.<br/>
+          <span style={{ color: "#cb7cb6" }}>.env example: <br/>
+            REACT_APP_AMADEUS_API_KEY=your_key<br/>
+            REACT_APP_AMADEUS_API_SECRET=your_secret
+          </span>
+        </div>
+      )}
+
       <form onSubmit={handleGenerateItinerary} style={{ marginTop: 18, marginBottom: 16 }}>
         <div className="form-group">
           <label className="form-label" htmlFor="origin">Origin</label>
@@ -99,7 +121,7 @@ function PlannerPage() {
           <label className="form-label" htmlFor="preferences">Preferences / Special Requests</label>
           <input className="form-input" name="preferences" id="preferences" placeholder="Museums, food, etc." value={form.preferences} onChange={handleChange} />
         </div>
-        <button className="btn btn-large" type="submit" disabled={loading}>
+        <button className="btn btn-large" type="submit" disabled={loading || !amadeusKey || !amadeusSecret}>
           {loading ? "Generating..." : "Generate Itinerary"}
         </button>
       </form>
@@ -113,7 +135,7 @@ function PlannerPage() {
         )}
       </div>
       <div style={{ color: "#888", fontSize: "0.97em", marginTop: 16 }}>
-        <b>API Note:</b> Integrate <span style={{ color: "#cb7cb6" }}>Amadeus</span> travel APIs here (API keys in requirements).
+        <b>API Note:</b> For live results, ensure you set <code>REACT_APP_AMADEUS_API_KEY</code> and <code>REACT_APP_AMADEUS_API_SECRET</code> in your .env file.
       </div>
     </section>
   );
