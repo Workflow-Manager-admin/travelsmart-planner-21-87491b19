@@ -1,5 +1,16 @@
 import React, { useState, useRef, useEffect } from "react";
 
+/*
+  Uses Cohere API for AI chat if you provide a .env key:
+
+    REACT_APP_COHERE_KEY
+
+  You must add this env var to your .env file at the root:
+    REACT_APP_COHERE_KEY=your_cohere_api_key
+
+  Demo responses only if not present!
+*/
+
 // PUBLIC_INTERFACE
 function ChatPage() {
   const [messages, setMessages] = useState([

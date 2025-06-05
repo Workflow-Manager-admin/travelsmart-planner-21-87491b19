@@ -24,17 +24,47 @@ function MapPage() {
   // Demo center: Paris
   const center = [48.8566, 2.3522];
 
+  // Mapbox key and tile url setup
+  const mapboxKey = process.env.REACT_APP_MAPBOX_KEY || '';
+  const mapboxStyle = "light-v11";
+  const mapboxUrl = mapboxKey
+    ? `https://api.mapbox.com/styles/v1/mapbox/${mapboxStyle}/tiles/{z}/{x}/{y}?access_token=${mapboxKey}`
+    : "https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png";
+  const attribution = mapboxKey
+    ? '&copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a>, &copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>'
+    : '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; OpenMapTiles &copy; OpenStreetMap contributors';
+
   return (
     <section className="map-section">
       <div className="section-title">Interactive Map</div>
       <div className="section-description">
         Explore your destination(s) and route below. (Demo: Paris as an example.)
       </div>
+
+      {!mapboxKey && (
+        <div style={{
+          background: "#ffe4e1",
+          color: "#ae6c46",
+          border: "1.5px solid #f8b14f",
+          borderRadius: 8,
+          padding: "10px 14px",
+          marginBottom: 12,
+          fontWeight: 500,
+          textAlign: "center"
+        }}>
+          <b>Mapbox API Key is missing.</b> Using fallback map tiles. For high-res maps, add<br/>
+          <code>REACT_APP_MAPBOX_KEY</code> to your <code>.env</code>.<br/>
+          <span style={{color:"#cb7cb6",fontSize:"0.93em"}}>.env example:<br/>
+            REACT_APP_MAPBOX_KEY=your_mapbox_token
+          </span>
+        </div>
+      )}
+
       <div style={{ minHeight: 380, borderRadius: 10, overflow: "hidden", marginBottom: 18 }}>
         <MapContainer center={center} zoom={6} scrollWheelZoom={true} style={{ height: 380, width: "100%" }}>
           <TileLayer
-            attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; OpenMapTiles &copy; OpenStreetMap contributors'
-            url="https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png"
+            attribution={attribution}
+            url={mapboxUrl}
           />
           <Marker position={center}>
             <Popup>
@@ -44,7 +74,7 @@ function MapPage() {
         </MapContainer>
       </div>
       <div style={{ color: "#888", fontSize: "0.99em", marginTop: 8 }}>
-        <b>API Note:</b> Dynamic markers and paths can be rendered here. Add Mapbox token or custom tiles as needed.
+        <b>API Note:</b> Provide <code>REACT_APP_MAPBOX_KEY</code> for real Mapbox tiles, or continue using demo tiles (features may be limited).
       </div>
     </section>
   );
