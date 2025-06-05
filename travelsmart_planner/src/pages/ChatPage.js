@@ -63,6 +63,26 @@ function ChatPage() {
       <div className="section-description">
         Chat with our AI for trip tips, local highlights, or general travel guidance.
       </div>
+
+      {!cohereKey && (
+        <div style={{
+          background: "#ffe4e1",
+          color: "#ae6c46",
+          border: "1.5px solid #f8b14f",
+          borderRadius: 8,
+          padding: "10px 14px",
+          marginBottom: 10,
+          fontWeight: 500,
+          textAlign: "center"
+        }}>
+          <b>Cohere API Key not detected.</b> You're in demo mode!<br/>
+          Add <code>REACT_APP_COHERE_KEY</code> to your <code>.env</code> for live AI chat.<br/>
+          <span style={{color:"#cb7cb6",fontSize:"0.93em"}}>.env example:<br/>
+            REACT_APP_COHERE_KEY=your_api_key
+          </span>
+        </div>
+      )}
+
       <div className="chat-window">
         <div className="chat-messages">
           {messages.map((msg, idx) => (
@@ -103,7 +123,7 @@ function ChatPage() {
         </form>
       </div>
       <div style={{ fontSize: "0.89em", color: "#aaa", marginTop: 12 }}>
-        <b>API Note:</b> Connect to OpenAI or Cohere for real responses (API key in requirements).
+        <b>API Note:</b> Set <code>REACT_APP_COHERE_KEY</code> in your .env for live, AI-powered travel suggestions via Cohere.
       </div>
     </section>
   );
