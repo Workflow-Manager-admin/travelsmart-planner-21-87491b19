@@ -203,3 +203,71 @@ ERROR in ./src/pages/MapPage.js 9:0-24
 Module not found: Error: Can't resolve 'leaflet' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/src/pages'
 
 webpack compiled with 6 errors
+Compiling...
+Failed to compile.
+
+Module not found: Error: Can't resolve 'react-router-dom' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/src'
+LOG from webpack.FileSystemInfo
+<w> Managed item /home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/node_modules/react-router-dom isn't a directory or doesn't contain a package.json (see snapshot.managedPaths option)
+<w> Managed item /home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/node_modules/react-leaflet isn't a directory or doesn't contain a package.json (see snapshot.managedPaths option)
+<w> Managed item /home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/node_modules/leaflet isn't a directory or doesn't contain a package.json (see snapshot.managedPaths option)
++ 15 hidden lines
+
+ERROR in ./src/App.js 5:0-97
+Module not found: Error: Can't resolve 'react-router-dom' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/src'
+
+ERROR in ./src/components/NavBar.js 5:0-43
+Module not found: Error: Can't resolve 'react-router-dom' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/src/components'
+
+ERROR in ./src/pages/HomePage.js 6:0-47
+Module not found: Error: Can't resolve 'react-router-dom' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/src/pages'
+
+ERROR in ./src/pages/MapPage.js 5:0-71
+Module not found: Error: Can't resolve 'react-leaflet' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/src/pages'
+
+ERROR in ./src/pages/MapPage.js 6:0-34
+Module not found: Error: Can't resolve 'leaflet/dist/leaflet.css' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/src/pages'
+
+ERROR in ./src/pages/MapPage.js 9:0-24
+Module not found: Error: Can't resolve 'leaflet' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/src/pages'
+
+webpack compiled with 6 errors
+Compiling...
+Failed to compile.
+
+Module not found: Error: Can't resolve 'react-router-dom' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/src'
+LOG from webpack.FileSystemInfo
+<w> Managed item /home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/node_modules/leaflet isn't a directory or doesn't contain a package.json (see snapshot.managedPaths option)
++ 13 hidden lines
+
+ERROR in ./src/App.js 5:0-97
+Module not found: Error: Can't resolve 'react-router-dom' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/src'
+
+ERROR in ./src/components/NavBar.js 5:0-43
+Module not found: Error: Can't resolve 'react-router-dom' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/src/components'
+
+ERROR in ./src/pages/HomePage.js 6:0-47
+Module not found: Error: Can't resolve 'react-router-dom' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/src/pages'
+
+ERROR in ./src/pages/MapPage.js 5:0-71
+Module not found: Error: Can't resolve 'react-leaflet' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/src/pages'
+
+ERROR in ./src/pages/MapPage.js 9:0-24
+Module not found: Error: Can't resolve 'leaflet' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/src/pages'
+
+ERROR in ./node_modules/leaflet/dist/leaflet.css (./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[5].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[5].use[2]!./node_modules/source-map-loader/dist/cjs.js!./node_modules/leaflet/dist/leaflet.css) 5:36-81
+Module not found: Error: Can't resolve 'images/layers.png' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/node_modules/leaflet/dist'
+
+ERROR in ./node_modules/leaflet/dist/leaflet.css (./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[5].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[5].use[2]!./node_modules/source-map-loader/dist/cjs.js!./node_modules/leaflet/dist/leaflet.css) 6:36-84
+Module not found: Error: Can't resolve 'images/layers-2x.png' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/node_modules/leaflet/dist'
+
+ERROR in ./node_modules/leaflet/dist/leaflet.css (./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[5].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[5].use[2]!./node_modules/source-map-loader/dist/cjs.js!./node_modules/leaflet/dist/leaflet.css) 7:36-86
+Module not found: Error: Can't resolve 'images/marker-icon.png' in '/home/kavia/workspace/code-generation/travelsmart-planner-21-87491b19/travelsmart_planner/node_modules/leaflet/dist'
+
+webpack compiled with 8 errors
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
